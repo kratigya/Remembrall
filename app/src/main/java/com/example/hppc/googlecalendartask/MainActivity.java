@@ -2,16 +2,20 @@ package com.example.hppc.googlecalendartask;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -24,6 +28,8 @@ public class MainActivity extends AppCompatActivity {
     private DatePickerDialog startDatePicker, endDatePicker;
     private TimePickerDialog startTimePicker, endTimePicker;
     private SimpleDateFormat dateFormatter;
+    private Calendar start, stDate, end;
+    private String eventDescription;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +42,9 @@ public class MainActivity extends AppCompatActivity {
         startTime = (EditText) findViewById(R.id.startTime);
         endDate = (EditText) findViewById(R.id.endDate);
         endTime = (EditText) findViewById(R.id.endTime);
+        start = Calendar.getInstance();
+        end = Calendar.getInstance();
+        stDate = Calendar.getInstance();
 
         Calendar cal = Calendar.getInstance();
         dateFormatter = new SimpleDateFormat("dd-MMM-yyyy", Locale.US);
@@ -45,6 +54,8 @@ public class MainActivity extends AppCompatActivity {
             public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
                 Calendar newCal = Calendar.getInstance();
                 newCal.set(year,month,dayOfMonth);
+                start.set(year, month, dayOfMonth);
+                stDate.set(year, month, dayOfMonth, 0, 0);
                 startDate.setText(dateFormatter.format(newCal.getTime()));
             }
         },cal.get(Calendar.YEAR),cal.get(Calendar.MONTH),cal.get(Calendar.DAY_OF_MONTH));
@@ -52,7 +63,23 @@ public class MainActivity extends AppCompatActivity {
         startTimePicker = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
             @Override
             public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                start.set(Calendar.HOUR, hourOfDay);
+                start.set(Calendar.MINUTE, minute);
                 startTime.setText(hourOfDay + ":" + minute);
+            }
+        }, cal.get(Calendar.HOUR), cal.get(Calendar.MINUTE), false);
+
+        endTimePicker = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                end.set(Calendar.HOUR, hourOfDay);
+                end.set(Calendar.MINUTE, minute);
+                if (end.after(start)) {
+                    endTime.setText(hourOfDay + ":" + minute);
+                } else {
+                    Toast.makeText(MainActivity.this, "Wrong Time", Toast.LENGTH_LONG).show();
+                }
+
             }
         }, cal.get(Calendar.HOUR), cal.get(Calendar.MINUTE), false);
 
@@ -62,33 +89,59 @@ public class MainActivity extends AppCompatActivity {
             public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
                 Calendar newCal = Calendar.getInstance();
                 newCal.set(year,month,dayOfMonth);
-                endDate.setText(dateFormatter.format(newCal.getTime()));
+                end.set(year, month, dayOfMonth, 0, 0);
+                if (end.equals(stDate) || end.after(start)) {
+                    endDate.setText(dateFormatter.format(newCal.getTime()));
+                } else {
+                    Toast.makeText(MainActivity.this, "Wrong Date", Toast.LENGTH_LONG).show();
+                }
+
             }
         },cal.get(Calendar.YEAR),cal.get(Calendar.MONTH),cal.get(Calendar.DAY_OF_MONTH));
 
-
-
-        startDate.setOnClickListener(new View.OnClickListener() {
+        startDate.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public void onClick(View v) {
+            public boolean onTouch(View v, MotionEvent event) {
+                hideKeyboard(v);
                 startDatePicker.show();
+                return true;
             }
         });
 
-        endDate.setOnClickListener(new View.OnClickListener() {
+
+        endDate.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public void onClick(View v) {
+            public boolean onTouch(View v, MotionEvent event) {
+                hideKeyboard(v);
                 endDatePicker.show();
+                return true;
             }
         });
 
-        startTime.setOnClickListener(new View.OnClickListener() {
+        startTime.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public void onClick(View v) {
+            public boolean onTouch(View v, MotionEvent event) {
+                hideKeyboard(v);
                 startTimePicker.show();
+                return true;
             }
         });
 
+        endTime.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                hideKeyboard(v);
+                endTimePicker.show();
+                return true;
+            }
+        });
+    }
+
+    private void hideKeyboard(View v) {
+        InputMethodManager imm = (InputMethodManager) v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+        }
     }
 
     @Override
