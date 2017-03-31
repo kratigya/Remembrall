@@ -1,26 +1,28 @@
 package com.example.hppc.googlecalendartask;
 
 import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Locale;
-
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.TimePicker;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
     private EditText startDate, startTime, endDate, endTime, desc;
     private Button submit;
     private DatePickerDialog startDatePicker, endDatePicker;
+    private TimePickerDialog startTimePicker, endTimePicker;
     private SimpleDateFormat dateFormatter;
 
     @Override
@@ -47,6 +49,14 @@ public class MainActivity extends AppCompatActivity {
             }
         },cal.get(Calendar.YEAR),cal.get(Calendar.MONTH),cal.get(Calendar.DAY_OF_MONTH));
 
+        startTimePicker = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
+            @Override
+            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                startTime.setText(hourOfDay + ":" + minute);
+            }
+        }, cal.get(Calendar.HOUR), cal.get(Calendar.MINUTE), false);
+
+
         endDatePicker = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
@@ -69,6 +79,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 endDatePicker.show();
+            }
+        });
+
+        startTime.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startTimePicker.show();
             }
         });
 
